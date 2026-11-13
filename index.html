@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jasmitha S | Cybernetic Developer Portfolio</title>
+    <style>
+        :root {
+            --bg-color: #020617;
+            --panel-bg: rgba(15, 23, 42, 0.75);
+            --border-color: rgba(56, 189, 248, 0.35);
+            --neon-blue: #38bdf8;
+            --neon-cyan: #22d3ee;
+            --neon-purple: #c084fc;
+            --neon-green: #4ade80;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        canvas#matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1050px;
+            margin: 0 auto;
+            padding: 50px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* --- Hollywood Cyber-HUD Boot Loader --- */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #010409;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+
+        .loader-wrapper {
+            width: 320px;
+            text-align: center;
+        }
+
+        .loader-header {
+            color: var(--neon-cyan);
+            font-family: monospace;
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px rgba(34, 211, 238, 0.6);
+        }
+
+        .loader-logs {
+            height: 60px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: left;
+            margin-bottom: 15px;
+            overflow: hidden;
+            border-left: 2px solid var(--neon-blue);
+            padding-left: 8px;
+        }
+
+        .loader-bar-frame {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loader-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-cyan), var(--neon-purple));
+            box-shadow: 0 0 15px var(--neon-cyan);
+            transition: width 0.1s linear;
+        }
+
+        .loader-percentage {
+            margin-top: 12px;
+            font-family: monospace;
+            color: var(--neon-blue);
+            font-size: 0.95rem;
+            letter-spacing: 2px;
+        }
+
+        /* --- Header & Profile --- */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 45px 25px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 0 40px rgba(56, 189, 248, 0.1);
+        }
+
+        header h1 {
+            font-size: 3.2rem;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-cyan), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1.5px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+
+        /* --- Interactive Terminal Console --- */
+        .terminal-box {
+            background: rgba(1, 4, 9, 0.95);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: left;
+            margin: 25px auto 0 auto;
+            max-width: 720px;
+            font-family: monospace;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 10px;
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .terminal-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background: #ef4444; }
+        .dot-yellow { background: #f59e0b; }
+        .dot-green { background: #10b981; }
+
+        .terminal-title {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .terminal-output {
+            color: var(--neon-cyan);
+            font-size: 0.9rem;
+            min-height: 85px;
+            max-height: 160px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        .terminal-prompt-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 12px;
+        }
+
+        .prompt-symbol {
+            color: var(--neon-green);
+            font-weight: bold;
+        }
+
+        .terminal-input {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-family: monospace;
+            font-size: 0.9rem;
+            outline: none;
+            width: 100%;
+        }
+
+        .terminal-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .t-btn {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: var(--neon-cyan);
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-family: monospace;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .t-btn:hover {
+            background: var(--neon-blue);
+            color: #020617;
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        /* --- Social Links --- */
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .social-links a {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 11px 24px;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+        }
+
+        .social-links a:hover {
+            background: var(--neon-blue);
+            color: #020617;
+            box-shadow: 0 0 20px var(--neon-blue);
+            border-color: var(--neon-blue);
+            transform: translateY(-3px);
+        }
+
+        /* --- Sections & 3D Interactive Spotlight Cards --- */
+        section {
+            margin-bottom: 55px;
+        }
+
+        section h2 {
+            font-size: 2rem;
+            margin-bottom: 25px;
+            border-left: 4px solid var(--neon-cyan);
+            padding-left: 14px;
+            color: var(--text-main);
+            letter-spacing: 0.5px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        /* 3D Spotlight Card Container */
+        .card {
+            position: relative;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            backdrop-filter: blur(12px);
+            overflow: hidden;
+            transition: transform 0.1s ease, box-shadow 0.3s ease;
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+
+        /* Glowing Mouse Spotlight Overlay */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: var(--mouse-y, 0px);
+            left: var(--mouse-x, 0px);
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.2) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 20px 40px rgba(34, 211, 238, 0.15);
+        }
+
+        .card > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+            color: var(--neon-cyan);
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.98rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            background: rgba(56, 189, 248, 0.08);
+            color: var(--neon-blue);
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            font-family: monospace;
+            transition: all 0.2s;
+        }
+
+        .tag:hover {
+            background: var(--neon-blue);
+            color: #020617;
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .project-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 18px;
+            color: var(--neon-cyan);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        .project-link:hover {
+            color: var(--neon-blue);
+            transform: translateX(4px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hollywood-Grade Cyber-HUD Boot Loader -->
+    <div id="loader">
+        <div class="loader-wrapper">
+            <div class="loader-header">INITIALIZING JASMITHA.OS</div>
+            <div class="loader-logs" id="loaderLogs">
+                [SYS] Mounting secure virtual filesystem...<br>
+                [SEC] Verifying cryptographic signatures...
+            </div>
+            <div class="loader-bar-frame">
+                <div class="loader-progress" id="loaderProgress"></div>
+            </div>
+            <div class="loader-percentage" id="loadPercent">0%</div>
+        </div>
+    </div>
+
+    <!-- Matrix Code Rain Canvas -->
+    <canvas id="matrix"></canvas>
+
+    <div class="container">
+        <!-- Header Profile -->
+        <header>
+            <h1>Jasmitha S</h1>
+            <p>B.E. Computer Science & Engineering | Sathyabama Institute of Science and Technology</p>
+            
+            <!-- Interactive Terminal Console -->
+            <div class="terminal-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <div class="terminal-dot dot-red"></div>
+                        <div class="terminal-dot dot-yellow"></div>
+                        <div class="terminal-dot dot-green"></div>
+                    </div>
+                    <div class="terminal-title">jasmitha@sist-cse: ~ (Interactive Shell)</div>
+                </div>
+                
+                <div class="terminal-output" id="termOutput">
+                    > System online. Type commands or click shortcut buttons below. Try 'whoami', 'skills', or 'matrix'.
+                </div>
+
+                <div class="terminal-prompt-row">
+                    <span class="prompt-symbol">❯</span>
+                    <input type="text" id="termInput" class="terminal-input" placeholder="Type a command (e.g., whoami)..." autocomplete="off">
+                </div>
+
+                <div class="terminal-controls">
+                    <button class="t-btn" onclick="runCommand('whoami')">whoami</button>
+                    <button class="t-btn" onclick="runCommand('skills')">skills</button>
+                    <button class="t-btn" onclick="runCommand('projects')">projects</button>
+                    <button class="t-btn" onclick="runCommand('matrix')">matrix</button>
+                    <button class="t-btn" onclick="runCommand('clear')">clear</button>
+                </div>
+            </div>
+
+            <!-- Social Links -->
+            <div class="social-links">
+                <a href="https://github.com/jasmitha810" target="_blank" rel="noopener">GitHub</a>
+                <a href="https://www.linkedin.com/in/jasmitha-s-521a5a417" target="_blank" rel="noopener">LinkedIn</a>
+                <a href="mailto:jasmitha81008@gmail.com" target="_blank" rel="noopener">Email</a>
+            </div>
+        </header>
+
+        <!-- Technical Arsenal -->
+        <section>
+            <h2>Technical Arsenal</h2>
+            <div class="grid">
+                <div class="card interactive-card">
+                    <h3>Web Technologies</h3>
+                    <p>Building clean and responsive structural web layouts and modern interfaces.</p>
+                    <div class="tags">
+                        <span class="tag">HTML5</span>
+                        <span class="tag">CSS3</span>
+                    </div>
+                </div>
+
+                <div class="card interactive-card">
+                    <h3>Core Programming</h3>
+                    <p>Strong algorithmic foundation, problem-solving, and structured software development.</p>
+                    <div class="tags">
+                        <span class="tag">Python</span>
+                        <span class="tag">C</span>
+                        <span class="tag">C++</span>
+                        <span class="tag">Git & GitHub</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Projects -->
+        <section>
+            <h2>Featured Projects</h2>
+            <div class="grid">
+                <div class="card interactive-card">
+                    <h3>Resume Builder</h3>
+                    <p>An interactive web studio enabling non-coders to design, customize, and generate clean resumes quickly with live previews.</p>
+                    <div class="tags">
+                        <span class="tag">HTML</span>
+                        <span class="tag">CSS</span>
+                        <span class="tag">Interactive UI</span>
+                    </div>
+                    <a href="https://jasmitha810.github.io/resume-builder/" class="project-link" target="_blank" rel="noopener">Launch Project →</a>
+                </div>
+
+                <div class="card interactive-card">
+                    <h3>Escapicity</h3>
+                    <p>A smart attendance and bunk-capacity calculator built for students to track attendance thresholds and plan schedules effortlessly.</p>
+                    <div class="tags">
+                        <span class="tag">Web App</span>
+                        <span class="tag">Logic Engine</span>
+                        <span class="tag">Student Utility</span>
+                    </div>
+                    <a href="https://jasmitha810.github.io/escapicity/" class="project-link" target="_blank" rel="noopener">Launch Project →</a>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        /* --- Cinematic Boot Loader Sequence --- */
+        const logs = [
+            "[SYS] Mounting secure virtual filesystem...",
+            "[SEC] Verifying cryptographic signatures...",
+            "[NET] Establishing encrypted neural link...",
+            "[AI] Loading Jasmitha.OS core modules...",
+            "[OK] System fully operational. Welcome."
+        ];
+        
+        let progress = 0;
+        let logIndex = 0;
+        const progressEl = document.getElementById('loaderProgress');
+        const percentEl = document.getElementById('loadPercent');
+        const logsEl = document.getElementById('loaderLogs');
+        const loaderEl = document.getElementById('loader');
+
+        const bootInterval = setInterval(() => {
+            progress += Math.floor(Math.random() * 8) + 3;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(bootInterval);
+                setTimeout(() => {
+                    loaderEl.style.opacity = '0';
+                    loaderEl.style.visibility = 'hidden';
+                }, 300);
+            }
+            progressEl.style.width = progress + '%';
+            percentEl.textContent = progress + '%';
+
+            if (progress > (logIndex + 1) * 20 && logIndex < logs.length) {
+                logsEl.innerHTML += '<br>' + logs[logIndex];
+                logsEl.scrollTop = logsEl.scrollHeight;
+                logIndex++;
+            }
+        }, 50);
+
+        /* --- Advanced 3D Tilt & Spotlight Card Effect --- */
+        document.querySelectorAll('.interactive-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // Update spotlight CSS variables
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+
+                // 3D Tilt calculation
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = ((y - centerY) / centerY) * -7;
+                const rotateY = ((x - centerX) / centerX) * 7;
+
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px)`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+            });
+        });
+
+        /* --- Interactive Terminal Logic --- */
+        const termOutput = document.getElementById('termOutput');
+        const termInput = document.getElementById('termInput');
+
+        const responses = {
+            'whoami': 'Jasmitha S — B.E. Computer Science & Engineering student at Sathyabama Institute of Science and Technology. Building cutting-edge web tools.',
+            'skills': 'Technical Arsenal: HTML5, CSS3, Python, C, C++, and Git & GitHub.',
+            'projects': 'Featured Projects: 1. Resume Builder | 2. Escapicity (Smart student attendance calculator).',
+            'matrix': 'Matrix stream speed boosted. Neo has nothing on this codebase.',
+            'clear': '',
+            'help': 'Available commands: whoami, skills, projects, matrix, clear'
+        };
+
+        function runCommand(cmd) {
+            const cleanCmd = cmd.trim().toLowerCase();
+            if (cleanCmd === 'clear') {
+                termOutput.innerHTML = '';
+                return;
+            }
+            
+            let res = responses[cleanCmd] || `Command not recognized: '${cleanCmd}'. Type 'help' for available options.`;
+            termOutput.innerHTML += `<br>> ${cmd}<br><span style="color: var(--text-main);">${res}</span>`;
+            termOutput.scrollTop = termOutput.scrollHeight;
+        }
+
+        termInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                runCommand(termInput.value);
+                termInput.value = '';
+            }
+        });
+
+        /* --- High-Performance Matrix Rain --- */
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const chars = '01ABCDEFJASMITHA_S_CYBER';
+        const fontSize = 14;
+        let columns = canvas.width / fontSize;
+        const drops = [];
+        for (let i = 0; i < columns; i++) {
+            drops[i] = 1;
+        }
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.08)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#22d3ee';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 35);
+    </script>
+</body>
+</html>
