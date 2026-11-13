@@ -3,7 +3,7 @@
 An interactive, animated personal developer portfolio built with HTML, CSS, and JavaScript.
 
 ## 🌐 Live Demo
-👉 [View Live Website](https://jasmitha810.github.io/portfolio/)
+👉 [View Live Website](https://jasmitha810.github.io/jportfolio/)
 
 ## ✨ Features
 * Cyber-HUD loading screen
